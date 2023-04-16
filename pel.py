@@ -22,6 +22,7 @@ class Setup():
         rf=re.get()
         print(rf)
         alf=ale.get()
+        M=2
         n=1024
         Fs=48000
         dt=1/Fs
@@ -31,30 +32,45 @@ class Setup():
         d=1
         tau0=rf/c
 
+        ##координаты цели
         al0=np.deg2rad(90-alf)
         x0=rf*np.cos(al0)
         y0=rf*np.sin(al0)
 
-        x=0
-        y=0
+        ##координаты приемников
+        x=np.array([0,0])
+        y=np.array([-0.5,0.5])
 
-        Rip=(x-x0)**2+(y-y0)**2
-        Ri=np.sqrt(Rip)
-        tau=(Ri/c)-tau0
+        Y=np.zeros([M,n])
+        tau=np.zeros(M)
+        ntau=np.zeros(M)
+        for i in range(0,M):
+            Rip=(x[i]-x0)**2+(y[i]-y0)**2
+            print(Rip)
+            Ri=np.sqrt(Rip)
+            print(Ri)
+            tau[i]=(Ri/c)-tau0
+            print(tau)
+            ntau[i]=np.ceil(abs(tau[i])*Fs)
+            
+        for i in range(0,M):
+            utau=n+np.sum(ntau)
+            print(utau)
+            u0=np.random.randn(1,utau.astype(int))
+            print(u0)
+            t0a=u0.size
+            print(t0a)
+            t0=np.array(np.arange(1,t0a+1))*dt+np.min(tau)
+            print(len(t0))
+            ta=n+1
+            t1=np.array(np.arange(1,ta))*dt
+            s0=t1-tau[i]
+            print(len(s0))
+            u00=np.ndarray.flatten(u0)
+            print(u00.size)
+            S=np.interp(s0, t0, u00)
+            Y[i,]=np.fft.fft(S,n)
 
-        
-        ntau=np.ceil(abs(tau)*Fs)
-        utau=n+ntau
-        u0=np.random.randn(1,utau.astype(int))
-        t0a=u0.size-1
-        t0=np.array(np.arange(1,t0a))*dt+np.min(ntau)
-        ta=n-1
-        t1=np.array(np.arange(1,ta))*dt
-        s0=t1-tau
-        u00=np.ndarray.flatten(u0)
-        S=np.interp(u00, t0, s0)
-
-        Y=np.fft.fft(S,n)
         Yc=np.conjugate(Y)
         Ym=Y*Yc
         Yii=abs(np.fft.ifft(Ym,n))
