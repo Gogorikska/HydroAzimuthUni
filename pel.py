@@ -20,6 +20,7 @@ class Setup():
 
     def ping(self):
         rf=re.get()
+        print(rf)
         alf=ale.get()
         n=1024
         Fs=48000
@@ -27,6 +28,7 @@ class Setup():
         rf=1000
         alf=45
         c=1500
+        d=1
         tau0=rf/c
 
         al0=np.deg2rad(90-alf)
@@ -49,8 +51,28 @@ class Setup():
         ta=n-1
         t1=np.array(np.arange(1,ta))*dt
         s0=t1-tau
-        S=np.interp(t0, u0,
-        print(t0)
+        u00=np.ndarray.flatten(u0)
+        S=np.interp(u00, t0, s0)
+
+        Y=np.fft.fft(S,n)
+        Yc=np.conjugate(Y)
+        Ym=Y*Yc
+        Yii=abs(np.fft.ifft(Ym,n))
+        Yi=np.fft.ifftshift(Yii)
+        Pi=max(Yi)
+        Yi1=Yi.tolist()
+        Pg=Yi1.index(Pi)
+
+        Tc1=-(n-1)/2
+        Tc2=(n-1)/2
+        Tc=np.array(np.arange(Tc1,Tc2))
+        Nk=Tc*dt
+        ar=Nk*c/d
+        alsr=abs(np.emath.arcsin(ar))
+        als=np.rad2deg(alsr)
+        alsl=als.tolist()
+        ping=alsl[Pg]
+        print(ping)
 
 win=tk.Canvas(root)
 win.create_rectangle(20,20,300,240)
