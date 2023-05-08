@@ -1,10 +1,11 @@
 import tkinter as tk
 import numpy as np
 import turtle as t
+import scipy as sp
 from tkinter import messagebox
 
 root=tk.Tk()
-root.geometry("640x480")
+root.geometry("720x1280")
 
 class Setup():
     def _init_(self):
@@ -21,24 +22,31 @@ class Setup():
         sys2.penup()
         sys2.setpos(x[1],y[1])
 
-        ship.penup()
-        ship.setpos(x0,y0)
-
     def ping(self):
-        rf=int(re.get())
-        alf=int(ale.get())
         M=2
         n=1024
         Fs=48000
         dt=1/Fs
         c=1500
         d=1
-        tau0=rf/c
 
         ##координаты цели
-        al0=np.deg2rad(90-alf)
-        x0=rf*np.cos(al0)
-        y0=rf*np.sin(al0)
+        [x0, y0]=ship.pos()
+        al0=np.arctan(abs(y0)/abs(x0))
+        if x0>0 and y0>0:
+            al0=(np.pi/2)-al0
+        elif x0>0 and y0<0:
+            al0=al0+(np.pi/2)
+        elif x0<0 and y0<0:
+            al0=(np.pi/2)-al0+np.pi
+        elif x0<0 and y0>0:
+            al0=al0+(np.pi/2)+np.pi
+        rf=round(abs(y0)/abs(np.cos(al0)))
+        alf=round(np.rad2deg(al0))
+        tau0=rf/c
+        
+        re.configure(text=rf)
+        ale.configure(text=alf)
 
         ##координаты приемников
         x=np.array([0,0])
@@ -87,57 +95,66 @@ class Setup():
         self.plot(x,y,x0,y0)
         
     def start(self):
-        if re.get()=='' or ale.get()=='':
-            messagebox.showinfo('Ошибка','Введите все необходимые данные')
-        elif re.get()!='' and int(re.get())<0:
-            messagebox.showinfo('Ошибка','Расстояние не может быть отрицательным')
-        else:
             self.ping()
+            
 
-win=tk.Canvas(root)
-win.create_rectangle(20,20,300,240)
-win.place(x=20, y=20)
-sys1=t.RawTurtle(win)
+win=tk.Canvas(root, width=720, height=720)
+win.pack(anchor=tk.NW)
+
+scr=t.TurtleScreen(win)
+
+sys1=t.RawTurtle(scr)
 sys1.seth(90)
 sys1.shape("circle")
-sys2=t.RawTurtle(win)
+
+sys2=t.RawTurtle(scr)
 sys2.seth(90)
 sys2.shape("circle")
-ship=t.RawTurtle(win)
+
+ship=t.RawTurtle(scr)
 ship.seth(90)
 ship.shape("circle")
+ship.penup()
+scr.onclick(ship.goto)
 
-
-lbl=tk.Label(root)
-lbl.place(x=150, y=300)
+ui=tk.Frame(root)
+ui.pack()
 
 ##расстояние до цели
-re=tk.Entry(root)
-re.place(x=512, y=50)
-rd=tk.Label(root, text="Расстояние до цели")
-rd.place(x=400, y=50)
+rb=tk.Frame(ui)
+rb.pack()
+rd=tk.Label(rb, text="Расстояние до цели")
+rd.pack(side=tk.LEFT)
+re=tk.Label(rb, text="0")
+re.pack(side=tk.LEFT)
 
 ##курсовой угол
-ale=tk.Entry(root)
-ale.place(x=512, y=75)
-ald=tk.Label(root, text="Курсовой угол")
-ald.place(x=400, y=75)
+alb=tk.Frame(ui)
+alb.pack()
+ald=tk.Label(alb, text="Курсовой угол")
+ald.pack(side=tk.LEFT)
+ale=tk.Label(alb, text="0")
+ale.pack(side=tk.LEFT)
 
 ##пеленг
-phe=tk.Label(root, text="0")
-phe.place(x=512, y=100)
-phd=tk.Label(root, text="Пеленг")
-phd.place(x=400, y=100)
+phb=tk.Frame(ui)
+phb.pack()
+phd=tk.Label(phb, text="Пеленг")
+phd.pack(side=tk.LEFT)
+phe=tk.Label(phb, text="0")
+phe.pack(side=tk.LEFT)
 
 ##тип цели
-tye=tk.Label(root, text="undefined")
-tye.place(x=512, y=125)
-tyd=tk.Label(root, text="Тип цели")
-tyd.place(x=400, y=125)
+tyb=tk.Frame(ui)
+tyb.pack()
+tyd=tk.Label(tyb, text="Тип цели")
+tyd.pack(side=tk.LEFT)
+tye=tk.Label(tyb, text="undefined")
+tye.pack(side=tk.LEFT)
 
 pr=Setup()
 
-srt=tk.Button(root, text="START", command=pr.start, height=3, width=10)
-srt.place(x=470, y=210)
+srt=tk.Button(root, text="START", command=pr.start, height=1, width=10)
+srt.pack(side=tk.BOTTOM)
 
 root.mainloop()
