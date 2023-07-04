@@ -1,24 +1,126 @@
 import tkinter as tk
 import numpy as np
 import turtle as t
-import scipy as sp
-import math as m
-from tkinter import messagebox
+from tkinter.messagebox import showerror, showinfo
+from tkinter import ttk
 
 root=tk.Tk()
 root.geometry("720x1280")
+root.title("Гидролокатор")
 
-
-class Setup():
+class HydroAz():
     def _init_(self):
-        self.rf=rf
-        self.phf=phf
-        self.alf=alf
-        self.tyf=tyf
+        self.rft=rft
+        self.phft=phft
+        self.alft=alft
+        self.tyft=tyft
+        self.sre=sre
+        self.sale=sale
+        self.stye=stye
+        self.sugc=sugc
+        self.sroot=sroot
         self.F=F
         self.t=t
         
-    def plot(self,x,y,x0,y0):
+##выводит введенные данные в основную программу
+    def Fetch(self):
+        try:
+            fch=[0]*7
+            fch[0]=int(self.sre.get())    ##расстояние до цели
+            fch[1]=int(self.sale.get())   ##курсовой угол
+            fch[2]=int(self.sphe.get())   ##пеленг
+            fch[3]=int(self.sfre.get())   ##частота сигнала
+            fch[4]=float(self.stie.get()) ##длительность сигнала
+            fch[5]=self.salc.get()        ##на какую сторону идет поворот
+            fch[6]=self.sugc.get()        ##тип сигнала
+            if fch[5]=="" or fch[6]=="":
+                showerror(title="Ошибка",message="Введите все данные")
+            else:
+                self.sroot.withdraw() ##прячет окно
+                return fch
+        except (ValueError, TypeError, AttributeError):
+            showerror(title="Ошибка",message="Введите все данные")
+
+    def Help(self):
+        msg="ТОРПЕДА: 10-50кГц, 0.1-0.3с, непрерывный\nКОРАБЛЬ: 3-12кГц, больше 0.3с, непрерывный\nПОДЛОДКА: 0.8-16кГц, 0.1-0.3с, одиночный\nПРОЧЕЕ: все остальное\nРасстояние не больше 350-500м, больше уйдет за границы\nПри нажатии ОК может пропасть окно ввода данных, но на деле основное просто становится активным, второе никуда не пропало и не спряталось"
+        showinfo(title="Help", message=msg)
+
+##создает отдельное окно для ввода данных
+    def SETUP(self):
+        
+        self.sroot=tk.Tk()
+        self.sroot.geometry("640x480")
+        self.sroot.title("Ввод данных")
+        
+        sui=tk.Frame(self.sroot)
+        sui.pack()
+
+        ##расстояние до цели
+        srb=tk.Frame(sui)
+        srb.pack()
+        srd=tk.Label(srb, text="Расстояние до цели, м")
+        srd.pack(side=tk.LEFT)
+        self.sre=tk.Entry(srb)
+        self.sre.pack(side=tk.LEFT)
+
+        ##курсовой угол
+        salb=tk.Frame(sui)
+        salb.pack()
+        sald=tk.Label(salb, text="Курсовой угол, град")
+        sald.pack(side=tk.LEFT)
+        self.sale=tk.Entry(salb)
+        self.sale.pack(side=tk.LEFT)
+        types=["Левый борт","Правый борт"]
+        self.salc=tk.ttk.Combobox(salb, values=types)
+        self.salc.pack(side=tk.LEFT)
+
+        ##пеленг
+        sphb=tk.Frame(sui)
+        sphb.pack()
+        sphd=tk.Label(sphb, text="Пеленг, град")
+        sphd.pack(side=tk.LEFT)
+        self.sphe=tk.Entry(sphb)
+        self.sphe.pack(side=tk.LEFT)
+
+        #частота сигнала
+        sfrb=tk.Frame(sui)
+        sfrb.pack()
+        sfrd=tk.Label(sfrb, text="Частота сигнала, Гц")
+        sfrd.pack(side=tk.LEFT)
+        self.sfre=tk.Entry(sfrb)
+        self.sfre.pack()
+
+        #длительность сигнала
+        stib=tk.Frame(sui)
+        stib.pack()
+        stid=tk.Label(stib, text="Длительность сигнала, с")
+        stid.pack(side=tk.LEFT)
+        self.stie=tk.Entry(stib)
+        self.stie.pack()
+
+        ##тип сигнала
+        sugb=tk.Frame(sui)
+        sugb.pack()
+        sugd=tk.Label(sugb, text="Тип сигнала")
+        sugd.pack(side=tk.LEFT)
+        tsig=["Непрерывный","Одиночный"]
+        self.sugc=tk.ttk.Combobox(sugb, values=tsig)
+        self.sugc.pack(side=tk.LEFT)
+
+        ##закрывает окно
+        cat=tk.Button(self.sroot, text="CANCEL", command=self.sroot.destroy, height=1, width=10)
+        cat.pack(side=tk.BOTTOM)
+
+        ##окно помощи
+        cat=tk.Button(self.sroot, text="HELP", command=self.Help, height=1, width=10)
+        cat.pack(side=tk.BOTTOM)
+        
+        ##передает введенные данные
+        okt=tk.Button(self.sroot, text="OK", command=self.Fetch, height=1, width=10)
+        okt.pack(side=tk.BOTTOM)
+
+##графическое окно гидролокатора, показывает тип найденной цели и ее положение        
+    def plot(self,x,y,x0,y0,tyft,rtt,alft):
         
         sys1.penup()
         sys1.setpos(x[0],y[0])
@@ -26,105 +128,152 @@ class Setup():
         sys2.penup()
         sys2.setpos(x[1],y[1])
 
-    def CLSFK(self,F,t):
-        if F>=10000 and F<=50000 and t<=300:
-            print('torpedo')
-        if F>=3000 and F<=120000 and t>300:
-            print('ship')
-        if F>=800 and F<=16000 and t>=100:
-            print('submarine')
-        else:
-            print('miscelaneous')
+        ship.setpos(x0,y0)
+        ship.shapesize(2,2)
+        
+        if tyft=="Торпеда":
+            ship.shape("classic")
+            ship.color('red')
+        elif tyft=="Надводный корабль":
+            ship.shape("classic")
+            ship.color('red','yellow')
+        elif tyft=="Подводная лодка":
+            ship.shape("classic")
+            ship.color('blue')
+        elif tyft=="Прочее":
+            ship.shape("classic")
+            ship.color('green')
 
+        if rtt=="Левый борт":
+            ship.left(alft)
+        elif rtt=="Правый борт":
+            ship.right(alft)
+            
+##классификатор целей
+    def CLSFK(self,F,t,sugh):
+        tyft=""
+        if F>=10000 and F<=50000 and t<=0.3 and t>0.1 and sugh=="Непрерывный":
+            tyft="Торпеда"
+            tye.configure(text=tyft)
+        if F>=3000 and F<=120000 and t>0.3 and sugh=="Непрерывный":
+            tyft="Надводный корабль"
+            tye.configure(text=tyft)
+        if F>=800 and F<16000 and t>=0.1 and t<0.3 and sugh=="Одиночный":
+            tyft="Подводная лодка"
+            tye.configure(text=tyft)
+        elif F<800 and F>12000:
+            tyft="Прочее"
+            tye.configure(text=tyft)
+        return tyft
+    
+##основная программа гидролокатора
     def ping(self):
-        M=3
-        n=1024
-        Fs=48000
-        dt=1/Fs
-        c=1500
-        d=1
+        ##загрузка параметров
+        fch=self.Fetch()
+        rf=fch[0]   ##расстояние до цели
+        alft=fch[1] ##курсовой угол
+        alf=fch[2]  ##пеленг
+        F=fch[3]    ##частота сигнала
+        t=fch[4]    ##длительность сигнала
+        rtt=fch[5]  ##на какую сторону идет поворот
+        ugh=fch[6]  ##тип сигнала
+        
+        ##параметры приемной системы
+        M=2       ##число приемников
+        n=1024    ##число точек БПФ
+        Fs=480000 ##частота дискретизации
+        dt=1/Fs   ##шаг отсчетов времени
+        df=Fs/n   ##шаг дискретизации
+        c=1500    ##скорость звука в воде
+        d=1       ##расстояние между приемниками
 
         ##координаты цели
-        [x0, y0]=ship.pos()
-        al0=np.arctan(abs(y0)/abs(x0))
-        if x0>0 and y0>0:
-            al0=(np.pi/2)-al0
-        elif x0>0 and y0<0:
-            al0=al0+(np.pi/2)
-        elif x0<0 and y0<0:
-            al0=(np.pi/2)-al0+np.pi
-        elif x0<0 and y0>0:
-            al0=al0+(np.pi/2)+np.pi
-        rf=round(abs(y0)/abs(np.cos(al0)))
-        alf=round(np.rad2deg(al0))
+        x0=rf*np.cos(np.deg2rad(90-alf))
+        y0=rf*np.sin(np.deg2rad(90-alf))
         tau0=rf/c
-        
-        re.configure(text=rf)
-        ale.configure(text=alf)
+
+        ##формирование сигнала и нахождение его частоты
+        Tr=np.array(np.arange(0,t,dt))    ##массив времени
+        Fk=np.array(np.arange(0,n*df,df)) ##массив частот
+        Sg=np.sin(2*np.pi*F*Tr)           ##сигнал
+        Sp=abs(np.fft.fft(Sg,n))          ##спектр
+        Sf=Sp.tolist()
+        Ff=Fk[Sf.index(max(Sf))]          ##частота
+
+        ##формирование типа сигнала
+        ##реализованно довольно просто: берется шесть массивов одинаковой
+        ##длины, при одиночном сигнале один из массивов это массив сигнала,
+        ##остальные - нули, при непрерывном генерируется пачка из трех
+        ##импульсов, представляющая собой чередование массивов сигнала
+        ##и нулевых
+        Sq=np.zeros(len(Sg))
+        Ss=[]
+        scnt=0
+        if ugh=="Непрерывный":
+            for i in range(0,3):
+                Ss.append(Sg)
+                Ss.append(Sq)
+        elif ugh=="Одиночный":
+            Ss.append(Sg)
+            for i in range(0,5):
+                Ss.append(Sq)
+                
+        ##определение типа сигнала
+        ##полученный массив массивов проверяется поэлементно на соотвествие
+        ##элементам массива сигнала, считается количество подходящих элементов
+        ##и затем оно делится на длину массива сигнала. если результат деления
+        ##равен 1, сигнал одиночный, иначе непрерывный
+        for i in range (0,len(Ss)):
+            Sw=Ss[i]
+            for j in range (0,len(Sw)):
+                if Sw[j]==Sg[j]:
+                    scnt=scnt+1
+                    
+        if round(scnt/len(Sg))>1:
+            sugh="Непрерывный"
+        else:
+            sugh="Одиночный"
+                
+        tyft=self.CLSFK(F,t,sugh)
 
         ##координаты приемников
-        x=d*np.cos(np.array([0,(np.pi/2), np.pi]))
-        y=d*np.sin(np.array([0,(np.pi/2), np.pi]))
+        xl=1
+        x=[-0.5, 0.5]
+        y=[0, 0]
 
-        Y=np.zeros([M,n],dtype = 'complex_')
-        Yn=np.zeros([M,n],dtype = 'complex_')
+        ##нахождение расстояния
         tau=np.zeros(M)
-        ntau=np.zeros(M)
         for i in range(0,M):
             Rip=(x[i]-x0)**2+(y[i]-y0)**2
             Ri=np.sqrt(Rip)
             tau[i]=(Ri/c)-tau0
-            ntau[i]=np.ceil(abs(tau[i])*Fs)
-            
-        for i in range(0,M):
-            utau=n+np.sum(ntau[i])
-            u0=np.random.randn(1,utau.astype(int))
-            t0a=u0.size
-            t0=np.array(np.arange(1,t0a+1))*dt+np.min(tau)
-            ta=n+1
-            t11=np.array(np.arange(1,ta))*dt
-            t1=t11+tau[i]
-            u00=np.ndarray.flatten(u0)
-            Sn=sp.interpolate.interp1d(t0, u00, kind='cubic', fill_value='extrapolate')
-            S=Sn(t1)
-            Y[i,]=np.fft.fft(S,n)
-            Yn[i,]=np.conjugate(Y[i,])
 
-        Ym=np.zeros([M,n],dtype = 'complex_')
-        Ym[0,]=Y[1,]*Yn[0,]
-        Ym[1,]=Y[2,]*Yn[0,]
-        Ym[2,]=Y[1,]*Yn[2,]
-        Ypi=abs(np.fft.ifft(Ym,n))
-        Yp=np.fft.ifftshift(Ypi)
+        Tt=(1/2)*np.sqrt(abs((2*(tau[0]**2))+(2*(tau[1]**2))-(xl**2)))
+        Rt=(Tt+tau0)*c-Tt*c
+        re.configure(text=round(Rt))
 
-        Tc1=-(n-1)/2
-        Tc2=(n-1)/2
-        Tc=np.array(np.arange(Tc1,Tc2))
-        Nk=Tc*dt
-        ar=Nk*c/d
-        alsr=abs(np.emath.arcsin(ar))
-        als=np.rad2deg(alsr)
-        alsl=als.tolist()
+        ##нахождение пеленга
+        Pg=np.arccos(y0/Rt)
+        Az=np.rad2deg(Pg)
+        if x0<0:
+            Az=360-Az
+        phe.configure(text=round(Az,1))
 
-        kal=np.zeros(M)
-        for i in range(0,M):
-            Ye=Yp[i,]
-            Yen=Ye.tolist()
-            kln=Yen.index(max(Yen))
-            kal[i]=alsl[kln]
-
-        Yc=(kal[0]+kal[1])/2*np.cos(np.pi/6)
-        Ys=(1/3)*(kal[1]-kal[0]-2*kal[2])
-        Yt=m.atan2(Yc,Ys)*(180/np.pi)
-        Yi=(Yt-180)%360
+        ##нахождение курсового угла цели
+        rbe=90+Az
+        rbf=180-rbe
+        ale.configure(text=round(rbf,1))
         
-        phe.configure(text=Yt)
-        self.plot(x,y,x0,y0)
-        
+        self.plot(x,y,x0,y0,tyft,rtt,alft)
+
+##фунция начала программы для кнопки в основном окне
     def start(self):
             self.ping()
+            self.sroot.destroy()
             
+##формирование основного окна
 
+##графическое окно
 win=tk.Canvas(root, width=720, height=720)
 win.pack(anchor=tk.NW)
 
@@ -142,7 +291,6 @@ ship=t.RawTurtle(scr)
 ship.seth(90)
 ship.shape("circle")
 ship.penup()
-scr.onclick(ship.goto)
 
 ui=tk.Frame(root)
 ui.pack()
@@ -150,7 +298,7 @@ ui.pack()
 ##расстояние до цели
 rb=tk.Frame(ui)
 rb.pack()
-rd=tk.Label(rb, text="Расстояние до цели")
+rd=tk.Label(rb, text="Расстояние до цели, м:")
 rd.pack(side=tk.LEFT)
 re=tk.Label(rb, text="0")
 re.pack(side=tk.LEFT)
@@ -158,7 +306,7 @@ re.pack(side=tk.LEFT)
 ##курсовой угол
 alb=tk.Frame(ui)
 alb.pack()
-ald=tk.Label(alb, text="Курсовой угол")
+ald=tk.Label(alb, text="Курсовой угол, град:")
 ald.pack(side=tk.LEFT)
 ale=tk.Label(alb, text="0")
 ale.pack(side=tk.LEFT)
@@ -166,7 +314,7 @@ ale.pack(side=tk.LEFT)
 ##пеленг
 phb=tk.Frame(ui)
 phb.pack()
-phd=tk.Label(phb, text="Пеленг")
+phd=tk.Label(phb, text="Пеленг, град:")
 phd.pack(side=tk.LEFT)
 phe=tk.Label(phb, text="0")
 phe.pack(side=tk.LEFT)
@@ -174,14 +322,19 @@ phe.pack(side=tk.LEFT)
 ##тип цели
 tyb=tk.Frame(ui)
 tyb.pack()
-tyd=tk.Label(tyb, text="Тип цели")
+tyd=tk.Label(tyb, text="Тип цели:")
 tyd.pack(side=tk.LEFT)
 tye=tk.Label(tyb, text="undefined")
 tye.pack(side=tk.LEFT)
 
-pr=Setup()
+pr=HydroAz()
 
+##начинает программу
 srt=tk.Button(root, text="START", command=pr.start, height=1, width=10)
 srt.pack(side=tk.BOTTOM)
+
+##выводит окно ввода данных
+opt=tk.Button(root, text="SETUP", command=pr.SETUP, height=1, width=10)
+opt.pack(side=tk.BOTTOM)
 
 root.mainloop()
